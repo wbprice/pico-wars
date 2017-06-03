@@ -85,6 +85,9 @@ end
 -- draw player sprite
 function playerdraw()
 	spr(1, player.x, player.y)
+	spr(2, player.x + 8, player.y)
+	spr(17, player.x, player.y + 8)
+	spr(18, player.x + 8, player.y + 8)
 end
 
 -- library functions
