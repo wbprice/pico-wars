@@ -67,3 +67,14 @@ SDL_INIT_AUDIO ok
 SDL_OpenAudio ok
 Built-in audio drivers: 0 coreaudio 1 disk 2 dummy
 Current audio driver: coreaudio
+window closed (14)
+codo_exit
+  cmusic_stop
+  codo_main_exit
+  codo_config_save
+  codo_sound_exit
+  codo_video_exit
+  codo_joystick_exit
+  codo_system_exit
+  codo_items_created: 1005
+ok
