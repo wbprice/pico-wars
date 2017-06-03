@@ -14,6 +14,7 @@ player.x = screenwidth/2
 player.y = screenheight/2
 player.width = 23
 player.height = 23
+player.direction = 0
 
 -- game loop
 
@@ -69,8 +70,14 @@ end
 
 -- handle button inputs
 function playercontrol()
-	if (btn(0)) then player.x-=1 end
-	if (btn(1)) then player.x+=1 end
+	if (btn(0)) then 
+		player.direction=0
+		player.x-=1 
+	end
+	if (btn(1)) then 
+		player.direction=1
+		player.x+=1 
+	end
 	if (btn(2)) then player.y-=1 end
 	if (btn(3)) then player.y+=1 end
 
@@ -79,15 +86,21 @@ function playercontrol()
 	if (player.x >= screenwidth - player.width) then player.x = screenwidth - player.height end
 	if (player.y <= 0) then player.y = 0 end
 	if (player.y >= screenheight - player.height) then player.y = screenheight - player.height end
-
 end
 
 -- draw player sprite
 function playerdraw()
-	spr(1, player.x, player.y)
-	spr(2, player.x + 8, player.y)
-	spr(17, player.x, player.y + 8)
-	spr(18, player.x + 8, player.y + 8)
+	if player.direction==1 then
+		spr(1, player.x, player.y)
+		spr(2, player.x + 8, player.y)
+		spr(17, player.x, player.y + 8)
+		spr(18, player.x + 8, player.y + 8)
+	else
+		spr(3, player.x, player.y)
+		spr(4, player.x + 8, player.y)
+		spr(19, player.x, player.y + 8)
+		spr(20, player.x + 8, player.y + 8)
+	end
 end
 
 -- library functions

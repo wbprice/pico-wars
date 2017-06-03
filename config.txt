@@ -24,7 +24,7 @@ fullscreen_method 1 // 0 maximized window (linux)  1 borderless desktop-sized wi
 // :: System Settings
 
 frame_sleep_ms 5 // number of milli seconds to sleep each frame. To save laptop battery power, try 20
-sessions 5 // number of times program has been run
+sessions 10 // number of times program has been run
 
 // (scancode) hold this key down and left-click to simulate right-click
 rmb_key 0 // 0 for none  226 for LALT
