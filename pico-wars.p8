@@ -8,7 +8,8 @@ __lua__
 scene=0
 score=0
 second_counter=0;
-two_step_phase=false;
+two_step_phase=false
+throttle_toggle=false
 screenwidth = 127
 screenheight = 127
 player = {}
@@ -34,7 +35,7 @@ function _update()
 end
 
 function update_second_counter()
-	if second_counter > 15 then
+	if second_counter > 5 then
 		second_counter = 0
 		two_step_phase = not two_step_phase
 	else
@@ -46,25 +47,41 @@ function makeexhaust(x, y)
 	exhaust = {}
 	exhaust['x'] = x
 	exhaust['y'] = y
+	exhaust['age'] = 0;
 	return exhaust
 end
 
 function queueexhaust(x, y) 
 	local length = 0;
+
 	foreach(exhausts, function()
 		length = length + 1
 	end)
-	if (length > 3) then
-		
-	else
-		add(exhausts, makeexhaust(x, y))
+
+	if (length == 3) then
+		exhausts = {
+			exhausts[2],
+			exhausts[3]
+		}
 	end
+
+	add(exhausts, makeexhaust(x, y))
 end
 
 function drawexhaust()
 	foreach(exhausts, function(exhaust)
-		circfill(exhaust.x, exhaust.y, 2, 7)
+		circfill(exhaust.x, exhaust.y - exhaust.age / 2, 2, 7)
+		circfill(exhaust.x, exhaust.y - exhaust.age / 2, 1, 12)
 	end)
+end
+
+function throttle(cb)
+	if two_step_phase==true and throttle_toggle==true then
+		throttle_toggle=false
+		return cb()
+	elseif two_step_phase==false then 
+		throttle_toggle=true
+	end
 end
 
 function _draw()
@@ -87,6 +104,12 @@ function gameupdate()
 	playercontrol()
 end
 
+function updateexhaust()
+	foreach(exhausts, function(exhaust)
+		exhaust.age = exhaust.age + 1;
+	end)
+end
+
 -- draw functions
 function titledraw()
 	local titletxt = "title screen"
@@ -97,17 +120,9 @@ function titledraw()
 end
 
 function gamedraw()
-	local gametxt
-	if two_step_phase==true then
-		gametxt = "two step up"
-	else
-		gametxt = "two step down"
-	end
-
 	rectfill(0,0,screenwidth, screenheight, 12)
 	rectfill(0,0,screenwidth, 10, 0)
 	print("score: " .. score, 10, 4, 7)
-	print(gametxt, hcenter(gametxt), hcenter(gametxt), 10)
 
 	playerdraw()
 end
@@ -134,7 +149,10 @@ end
 
 -- draw player sprite
 function playerdraw()
-	queueexhaust(player.x, player.y)
+	throttle(function() 
+		queueexhaust(player.x, player.y)
+    end)
+	updateexhaust()
 	drawexhaust()
 	if two_step_phase==true then
 		spr(1, player.x, player.y)
