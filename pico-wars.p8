@@ -35,7 +35,7 @@ function _update()
 end
 
 function update_second_counter()
-	if second_counter > 5 then
+	if second_counter == 5 then
 		second_counter = 0
 		two_step_phase = not two_step_phase
 	else
@@ -49,6 +49,16 @@ function makeexhaust(x, y)
 	exhaust['y'] = y
 	exhaust['age'] = 0;
 	return exhaust
+end
+
+function getexhaustcolor(age) 
+	if age > 30 then
+		return 1
+	elseif age > 15 then
+		return 6
+	else
+		return 7
+	end
 end
 
 function queueexhaust(x, y) 
@@ -70,8 +80,8 @@ end
 
 function drawexhaust()
 	foreach(exhausts, function(exhaust)
-		circfill(exhaust.x, exhaust.y - exhaust.age / 2, 2, 7)
-		circfill(exhaust.x, exhaust.y - exhaust.age / 2, 1, 12)
+		circfill(exhaust.x, exhaust.y - exhaust.age / 3, 2, getexhaustcolor(exhaust.age))
+		circfill(exhaust.x, exhaust.y - exhaust.age / 3, 1, 12)
 	end)
 end
 
