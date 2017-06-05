@@ -61,6 +61,14 @@ function getexhaustcolor(age)
 	end
 end
 
+function drawgrid()
+	for i=1,8 do
+		local j = i * 16
+		line(j, 0, j, 128, 7)
+		line(0, j, 128, j, 7)
+	end
+end
+
 function queueexhaust(x, y) 
 	local length = 0;
 
@@ -113,7 +121,6 @@ function titleupdate()
 end
 
 function gameupdate()
-	score+=1
 	update_second_counter()
 	playercontrol()
 end
@@ -135,9 +142,7 @@ end
 
 function gamedraw()
 	rectfill(0,0,screenwidth, screenheight, 12)
-	rectfill(0,0,screenwidth, 10, 0)
-	print("score: " .. score, 10, 4, 7)
-
+	drawgrid()
 	playerdraw()
 end
 
