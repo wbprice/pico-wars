@@ -51,6 +51,24 @@ function makeexhaust(x, y)
 	return exhaust
 end
 
+function make_box_cursor(x, y)
+	cursor = {}
+	cursor['x'] = x
+	cursor['y'] = y
+	cursor['clicked'] = false
+	cursor['blink'] = false
+	return cursor
+end
+
+function draw_box_cursor(cursor)
+	rectfill(
+		cursor.x * 16 + 1, 
+		cursor.y * 16 + 1, 
+		cursor.x * 16 + 14, 
+		cursor.y * 16 + 14
+	)
+end
+
 function getexhaustcolor(age) 
 	if age > 30 then
 		return 1
@@ -143,6 +161,7 @@ end
 function gamedraw()
 	rectfill(0,0,screenwidth, screenheight, 12)
 	drawgrid()
+	draw_box_cursor(make_box_cursor(0, 0))
 	playerdraw()
 end
 
