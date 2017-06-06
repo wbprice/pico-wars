@@ -75,9 +75,7 @@ function draw_box_cursor(cursor)
 end
 
 function getexhaustcolor(age) 
-	if age > 30 then
-		return 1
-	elseif age > 15 then
+	if age > 20 then
 		return 6
 	else
 		return 7
