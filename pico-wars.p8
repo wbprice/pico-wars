@@ -160,7 +160,9 @@ cursor = make_box_cursor(0, 0)
 function gamedraw()
 	rectfill(0,0,screenwidth, screenheight, 12)
 	draw_box_cursor(cursor)
-	playerdraw()
+	throttle(function() 
+		playerdraw()
+	end)
 end
 
 -- handle button inputs
