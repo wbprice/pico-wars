@@ -19,6 +19,7 @@ player.width = 15
 player.height = 15
 player.direction = 1
 exhausts = {};
+cursor
 
 -- game loop
 
