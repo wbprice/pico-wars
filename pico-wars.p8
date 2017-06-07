@@ -1,58 +1,100 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
--- game title here
--- game author here
+-- Pico Wars
+-- @wbprice
 
--- debounce
+-- global vars
+scene=0
+screenwidth = 128
+screenheight = 128
+cursor = {}
+actors = {}
+tank = {}
+dbc_playercontrol = nil
+
+-- Debounce
 Debounce = {}
 Debounce.__index = Debounce
 
-function Debounce:new(cycles)
+function Debounce:new(cycles, callback)
     local debounce = {}
     setmetatable(debounce, Debounce)
-    debounce.counter = 0;
-    debounce.cycles = cycles;
+    debounce.counter = cycles
+    debounce.cycles = cycles
+	debounce.callback = callback
     return debounce
 end
 
 function Debounce:call(callback)
-    self.callback = callback
-end
-
-function Debounce:cycle()
-    self.counter = self.counter + 1
-    if self.counter > self.cycles then
-        self.counter = 0;
-        if self.callback then
-            self.callback();
-            self.callback = nil
-        end
+    if self.counter == self.cycles then
+        self.counter = 0
+		self.callback()
     end
 end
 
--- global vars
-scene=0
-score=0
-second_counter=0;
-two_step_phase=false
-throttle_toggle=false
-screenwidth = 127
-screenheight = 127
-player = {}
-player.x = screenwidth/2
-player.y = screenheight/2
-player.width = 15
-player.height = 15
-player.direction = 1
-exhausts = {}
-cursor = {}
-one_sec_debounce = {}
+function Debounce:cycle()
+    if self.counter < self.cycles then
+        self.counter = self.counter + 1
+    end
+end
+
+-- Cursor
+Cursor = {}
+Cursor.__index = Cursor
+
+function Cursor:new(x, y)
+	local crs = {}
+	setmetatable(crs, Cursor)
+	crs.x = x or 0
+	crs.y = y or 0
+	crs.width = 16
+	crs.height = 16
+	crs.clicked = false
+	return crs
+end
+
+function Cursor:draw()
+	spr(5, self.x, self.y)
+	spr(6, self.x + 8, self.y)
+	spr(21, self.x, self.y + 8)
+	spr(22, self.x + 8, self.y + 8)
+end
+
+-- Unit
+Unit = {}
+Unit.__index = Unit
+
+function Unit:new(x, y)
+	local unit = {}
+	setmetatable(unit, Unit)
+	unit.x = x or 0
+	unit.y = y or 0
+	unit.direction = 'right'
+	return unit
+end
+
+-- Tank
+Tank = {}
+Tank.__index = Tank
+
+function Tank:new(x, y)
+	tank = Unit:new(x, y)
+	setmetatable(tank, Tank)
+
+	return tank
+end
+
+function Tank:draw()
+	spr(1, self.x, self.y, 2, 2)
+end
 
 -- game loop
 function _init()
 -- this function runs as soon as the game loads
-	one_sec_debounce = Debounce:new(3)
+	cursor = Cursor:new(0, 0)
+	dbc_playercontrol = Debounce:new(3, playercontrol)
+	tank = Tank:new(3, 3)
 end
 
 function _update()
@@ -63,93 +105,6 @@ function _update()
 	end
 end
 
-function update_second_counter()
-	if second_counter == 5 then
-		second_counter = 0
-		two_step_phase = not two_step_phase
-	else
-		second_counter = second_counter + 1
-	end
-end
-
-function makeexhaust(x, y)
-	exhaust = {}
-	exhaust['x'] = x
-	exhaust['y'] = y
-	exhaust['age'] = 0;
-	return exhaust
-end
-
-function make_box_cursor(x, y)
-	cursor = {}
-	cursor['x'] = x
-	cursor['y'] = y
-	cursor['width'] = 16
-	cursor['height'] = 16 
-	cursor['clicked'] = false
-	cursor['blink'] = false
-	return cursor
-end
-
-function draw_box_cursor(cursor)
-	if two_step_phase==true then
-		spr(5, cursor.x, cursor.y)
-		spr(6, cursor.x + 8, cursor.y)
-		spr(21, cursor.x, cursor.y + 8)
-		spr(22, cursor.x + 8, cursor.y + 8)
-	else 
-		spr(37, cursor.x, cursor.y)
-		spr(38, cursor.x + 8, cursor.y)
-		spr(53, cursor.x, cursor.y + 8)
-		spr(54, cursor.x + 8, cursor.y + 8)
-	end
-end
-
-function getexhaustcolor(age) 
-	if age > 20 then
-		return 6
-	else
-		return 7
-	end
-end
-
-function queueexhaust(x, y) 
-	local length = 0;
-
-	foreach(exhausts, function()
-		length = length + 1
-	end)
-
-	if (length == 3) then
-		exhausts = {
-			exhausts[2],
-			exhausts[3]
-		}
-	end
-
-	if player.direction == 0 then
-		add(exhausts, makeexhaust(x + player.width, y))
-	else
-		add(exhausts, makeexhaust(x, y))
-	end
-end
-
-function drawexhaust()
-	foreach(exhausts, function(exhaust)
-		circfill(exhaust.x, exhaust.y - exhaust.age / 3, 2, getexhaustcolor(exhaust.age))
-		circfill(exhaust.x, exhaust.y - exhaust.age / 3, 1, 12)
-	end)
-end
-
-function throttle(cb)
-	if two_step_phase==true and throttle_toggle==true then
-		throttle_toggle=false
-		return cb()
-	elseif two_step_phase==false then 
-		throttle_toggle=true
-	end
-end
-
 function _draw()
 	if scene==0 then
 		titledraw()
@@ -157,6 +112,7 @@ function _draw()
 		gamedraw()
 	end
 end
+
 -- update functions
 function titleupdate()
 	if btnp(4) then
@@ -165,11 +121,8 @@ function titleupdate()
 end
 
 function gameupdate()
-	update_second_counter()
-	one_sec_debounce:cycle()
-	one_sec_debounce:call(function() 
-		playercontrol()
-	end)
+	dbc_playercontrol:cycle()
+	dbc_playercontrol:call()
 end
 
 function updateexhaust()
@@ -187,12 +140,10 @@ function titledraw()
 	print(starttxt, hcenter(starttxt), (screenheight/4)+(screenheight/2),7)
 end
 
-cursor = make_box_cursor(0, 0)
-
 function gamedraw()
 	rectfill(0,0,screenwidth, screenheight, 12)
-	draw_box_cursor(cursor)
-	playerdraw()
+	cursor:draw()
+	tank:draw()
 end
 
 -- handle button inputs
@@ -211,36 +162,10 @@ end
 
 -- draw player sprite
 function playerdraw()
-	throttle(function() 
-		queueexhaust(player.x, player.y)
-    end)
-	updateexhaust()
-	drawexhaust()
-	if two_step_phase==true then
-		if player.direction == 1 then
-			spr(1, player.x, player.y)
-			spr(2, player.x + 8, player.y)
-			spr(17, player.x, player.y + 8)
-			spr(18, player.x + 8, player.y + 8)
-		else
-			spr(3, player.x, player.y)
-			spr(4, player.x + 8, player.y)
-			spr(19, player.x, player.y + 8)
-			spr(20, player.x + 8, player.y + 8)
-		end
-	elseif two_step_phase==false then
-		if player.direction == 1 then
-			spr(33, player.x, player.y)
-			spr(34, player.x + 8, player.y)
-			spr(49, player.x, player.y + 8)
-			spr(50, player.x + 8, player.y + 8)
-		else
-			spr(35, player.x, player.y)
-			spr(36, player.x + 8, player.y)
-			spr(51, player.x, player.y + 8)
-			spr(52, player.x + 8, player.y + 8)
-		end
-	end
+	spr(1, cursor.x, cursor.y)
+	spr(2, cursor.x + 8, cursor.y)
+	spr(17, cursor.x, cursor.y + 8)
+	spr(18, cursor.x + 8, cursor.y + 8)
 end
 
 -- library functions
