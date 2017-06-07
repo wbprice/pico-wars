@@ -21,6 +21,17 @@ player.direction = 1
 exhausts = {}
 cursor = {}
 
+-- make throttle that allows a callback to be called once every n seconds
+function make_throttle(seconds)
+	return {
+		seconds = seconds,
+		ready = true,
+		call = function(self, callback)
+	}
+end
+
+one_sec_throttle = make_throttle(1)
+
 -- game loop
 function _init()
 -- this function runs as soon as the game loads
@@ -137,6 +148,7 @@ end
 
 function gameupdate()
 	update_second_counter()
+	one_sec_throttle.register()
 	playercontrol()
 end
 
