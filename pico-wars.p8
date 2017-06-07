@@ -4,6 +4,33 @@ __lua__
 -- game title here
 -- game author here
 
+-- debounce
+Debounce = {}
+Debounce.__index = Debounce
+
+function Debounce:new(cycles)
+    local debounce = {}
+    setmetatable(debounce, Debounce)
+    debounce.counter = 0;
+    debounce.cycles = cycles;
+    return debounce
+end
+
+function Debounce:call(callback)
+    self.callback = callback
+end
+
+function Debounce:cycle()
+    self.counter = self.counter + 1
+    if self.counter > self.cycles then
+        self.counter = 0;
+        if self.callback then
+            self.callback();
+            self.callback = nil
+        end
+    end
+end
+
 -- global vars
 scene=0
 score=0
@@ -20,21 +47,12 @@ player.height = 15
 player.direction = 1
 exhausts = {}
 cursor = {}
-
--- make throttle that allows a callback to be called once every n seconds
-function make_throttle(seconds)
-	return {
-		seconds = seconds,
-		ready = true,
-		call = function(self, callback)
-	}
-end
-
-one_sec_throttle = make_throttle(1)
+one_sec_debounce = {}
 
 -- game loop
 function _init()
 -- this function runs as soon as the game loads
+	one_sec_debounce = Debounce:new(3)
 end
 
 function _update()
@@ -148,8 +166,10 @@ end
 
 function gameupdate()
 	update_second_counter()
-	one_sec_throttle.register()
-	playercontrol()
+	one_sec_debounce:cycle()
+	one_sec_debounce:call(function() 
+		playercontrol()
+	end)
 end
 
 function updateexhaust()
@@ -172,9 +192,7 @@ cursor = make_box_cursor(0, 0)
 function gamedraw()
 	rectfill(0,0,screenwidth, screenheight, 12)
 	draw_box_cursor(cursor)
-	throttle(function() 
-		playerdraw()
-	end)
+	playerdraw()
 end
 
 -- handle button inputs
