@@ -55,10 +55,17 @@ function cursor_class:new(x, y)
 end
 
 function cursor_class:draw()
-	spr(0, self.x, self.y)
-	spr(0, self.x + 8, self.y)
-	spr(0, self.x, self.y + 8)
-	spr(0, self.x + 8, self.y + 8)
+	if self.clicked then
+		spr(0, self.x + 1, self.y + 1, 1, 1)
+		spr(0, self.x + 7, self.y + 1, 1, 1, true)
+		spr(0, self.x + 1, self.y + 7, 1, 1, false, true)
+		spr(0, self.x + 7, self.y + 7, 1, 1, true, true)
+	else
+		spr(0, self.x, self.y, 1, 1)
+		spr(0, self.x + 8, self.y, 1, 1, true)
+		spr(0, self.x, self.y + 8, 1, 1, false, true)
+		spr(0, self.x + 8, self.y + 8, 1, 1, true, true)
+	end
 end
 
 -- unit
@@ -156,6 +163,8 @@ function playercontrol()
 	if (btn(1)) then cursor.x+=16 end
 	if (btn(2)) then cursor.y-=16 end
 	if (btn(3)) then cursor.y+=16 end
+
+	if (btn(4)) then cursor.clicked = not cursor.clicked end
 
 	-- check if the cursor is still onscreen
 	if (cursor.x <= 0) then cursor.x = 0 end
