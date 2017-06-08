@@ -175,8 +175,8 @@ mountain_class.__index = mountain_class
 
 function mountain_class:new() {
 	local mountain = {}
-	mountian.move_modifier = 2
-	mountain.def_modifier = 5
+	mountian.move_modifier = -2
+	mountain.def_modifier = 4
 	return mountian
 }
 
