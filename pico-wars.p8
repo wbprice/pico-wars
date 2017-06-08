@@ -10,7 +10,7 @@ screenwidth = 128
 screenheight = 128
 cursor = {}
 actors = {}
-tank = {}
+
 dbc_playercontrol = nil
 dbc_toggle_headbob = nil
 headbob = true
@@ -95,7 +95,7 @@ tank_class = {}
 tank_class.__index = tank_class
 
 function tank_class:new(x, y)
-	tank = unit_class:new(x, y)
+	local tank = unit_class:new(x, y)
 	setmetatable(tank, tank_class)
 	return tank
 end
@@ -111,6 +111,74 @@ function tank_class:draw()
 		spr(1, self.x * 16, self.y * 16 + 2, 2, 2)
 	end
 end
+
+-- terrain types
+
+-- terrain class
+terrain_class = {}
+terrain_class.__index = terrain_class
+
+function terrain_class:new() {
+	local terrain = {}
+	setmetatable(terrain, terrain_class)
+	terrain.def_modifier = 0
+	terrain.move_modifier = 0
+	return terrain
+}
+
+-- grassland class
+grassland_class = {}
+grassland_class.__index = grassland_class
+
+function grassland_class:new() {
+	local grassland = terrain_class:new()
+	grassland.def_modifier = 1
+	return grassland
+}
+
+-- road class
+road_class = {}
+road_class.__index = road_class
+
+function road_class:new() {
+	local road = {}
+	road.move_modifier = 2
+	road.def_modifier = 2
+	return road
+}
+
+-- forest class
+forest_class = {}
+forest_class.__index = forest_class
+
+function forest_class:new() {
+	local forest = {}
+	forest.move_modifier = -1
+	forest.def_modifier = 3
+	return forest
+}
+
+-- city class
+city_class = {}
+city_class.__index = city_class
+
+function city_class:new() {
+	local city = {}
+	city.move_modifier = 2
+	city.def_modifier = 5
+	return city
+}
+
+-- mountain class
+mountain_class = {}
+mountain_class.__index = mountain_class
+
+function mountain_class:new() {
+	local mountain = {}
+	mountian.move_modifier = 2
+	mountain.def_modifier = 5
+	return mountian
+}
 
 -- game loop
 function _init()
