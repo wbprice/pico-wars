@@ -12,6 +12,12 @@ cursor = {}
 actors = {}
 tank = {}
 dbc_playercontrol = nil
+dbc_toggle_headbob = nil
+headbob = true
+
+function toggle_headbob()
+	headbob = not headbob
+end
 
 -- debounce
 debounce_class = {}
@@ -77,7 +83,9 @@ function unit_class:new(x, y)
 	setmetatable(unit, unit_class)
 	unit.x = x or 0
 	unit.y = y or 0
+	unit.active = true
 	unit.faction = faction or 'red'
+	unit.movement_range = 2
 	unit.direction = 'right'
 	return unit
 end
@@ -89,13 +97,20 @@ tank_class.__index = tank_class
 function tank_class:new(x, y)
 	tank = unit_class:new(x, y)
 	setmetatable(tank, tank_class)
+	tank.movement_range = 4
 	return tank
 end
 
 function tank_class:draw()
-	spr(1, self.x * 16, self.y * 16 + 3, 2, 2)
-	spr(3, self.x * 16, self.y * 16 + 11, 1, 1)
-	spr(3, self.x * 16 + 8, self.y * 16 + 11, 1, 1, true)
+	-- treads
+	spr(3, self.x * 16, self.y * 16 + 10, 1, 1)
+	spr(3, self.x * 16 + 8, self.y * 16 + 10, 1, 1, true)
+	-- top
+	if self.active and headbob then
+		spr(1, self.x * 16, self.y * 16 + 3, 2, 2)
+	else
+		spr(1, self.x * 16, self.y * 16 + 2, 2, 2)
+	end
 end
 
 -- game loop
@@ -103,6 +118,7 @@ function _init()
 -- this function runs as soon as the game loads
 	cursor = cursor_class:new(0, 0)
 	dbc_playercontrol = debounce_class:new(3, playercontrol)
+	dbc_toggle_headbob = debounce_class:new(9, toggle_headbob)
 	tank0 = tank_class:new(2, 3)
 	tank1 = tank_class:new(0, 0)
 	tank2 = tank_class:new(1, 5)
@@ -132,6 +148,8 @@ function titleupdate()
 end
 
 function gameupdate()
+	dbc_toggle_headbob:cycle()
+	dbc_toggle_headbob:call()
 	dbc_playercontrol:cycle()
 	dbc_playercontrol:call()
 end
@@ -210,8 +228,8 @@ function iscolliding(obj1, obj2)
 end
 __gfx__
 7700000000e2eeeeeee00e0005111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-7000000000e288888eeee8e000555555000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000ee22222ee8888000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+7000000000e288888eeee8e005111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000ee22222ee8888000555555000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000028888888888888000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000002888888888222e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000e22222222eeee2000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
