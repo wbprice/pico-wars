@@ -10,7 +10,6 @@ screenwidth = 128
 screenheight = 128
 cursor = {}
 actors = {}
-
 dbc_playercontrol = nil
 dbc_toggle_headbob = nil
 headbob = true
@@ -78,15 +77,13 @@ end
 unit_class = {}
 unit_class.__index = unit_class
 
-function unit_class:new(x, y)
+function unit_class:new(x, y, faction, direction)
 	local unit = {}
 	setmetatable(unit, unit_class)
 	unit.x = x or 0
 	unit.y = y or 0
-	unit.acted = false
-	unit.moved = false
+	unit.active = true
 	unit.faction = faction or 'red'
-	unit.direction = 'right'
 	return unit
 end
 
@@ -94,101 +91,50 @@ end
 tank_class = {}
 tank_class.__index = tank_class
 
-function tank_class:new(x, y)
-	local tank = unit_class:new(x, y)
+function tank_class:new(x, y, faction)
+	tank = unit_class:new(x, y, faction)
 	setmetatable(tank, tank_class)
 	return tank
 end
 
 function tank_class:draw()
+	local flipDirection = false
+	-- faction specific arguments
+	if self.faction == 'blue' then
+		flipDirection = true
+		pal(2, 5)
+		pal(8, 1)
+		pal(14, 12)
+    end
 	-- treads
 	spr(3, self.x * 16, self.y * 16 + 10, 1, 1)
 	spr(3, self.x * 16 + 8, self.y * 16 + 10, 1, 1, true)
 	-- top
-	if not self.acted and headbob then
-		spr(1, self.x * 16, self.y * 16 + 3, 2, 2)
+	if self.active and headbob then
+		spr(1, self.x * 16, self.y * 16 + 3, 2, 2, flipDirection)
 	else
-		spr(1, self.x * 16, self.y * 16 + 2, 2, 2)
+		spr(1, self.x * 16, self.y * 16 + 2, 2, 2, flipDirection)
 	end
+	pal()
 end
-
--- terrain types
-
--- terrain class
-terrain_class = {}
-terrain_class.__index = terrain_class
-
-function terrain_class:new() {
-	local terrain = {}
-	setmetatable(terrain, terrain_class)
-	terrain.def_modifier = 0
-	terrain.move_modifier = 0
-	return terrain
-}
-
--- grassland class
-grassland_class = {}
-grassland_class.__index = grassland_class
-
-function grassland_class:new() {
-	local grassland = terrain_class:new()
-	grassland.def_modifier = 1
-	return grassland
-}
-
--- road class
-road_class = {}
-road_class.__index = road_class
-
-function road_class:new() {
-	local road = {}
-	road.move_modifier = 2
-	road.def_modifier = 2
-	return road
-}
-
--- forest class
-forest_class = {}
-forest_class.__index = forest_class
-
-function forest_class:new() {
-	local forest = {}
-	forest.move_modifier = -1
-	forest.def_modifier = 3
-	return forest
-}
-
--- city class
-city_class = {}
-city_class.__index = city_class
-
-function city_class:new() {
-	local city = {}
-	city.move_modifier = 2
-	city.def_modifier = 5
-	return city
-}
-
--- mountain class
-mountain_class = {}
-mountain_class.__index = mountain_class
-
-function mountain_class:new() {
-	local mountain = {}
-	mountian.move_modifier = -2
-	mountain.def_modifier = 4
-	return mountian
-}
 
 -- game loop
 function _init()
 -- this function runs as soon as the game loads
 	cursor = cursor_class:new(0, 0)
 	dbc_playercontrol = debounce_class:new(3, playercontrol)
-	dbc_toggle_headbob = debounce_class:new(9, toggle_headbob)
-	tank0 = tank_class:new(2, 3)
-	tank1 = tank_class:new(0, 0)
-	tank2 = tank_class:new(1, 5)
+	dbc_toggle_headbob = debounce_class:new(18, toggle_headbob)
+    actors = {}
+	actors.red = {
+		tank_class:new(2, 3, 'red'),
+		tank_class:new(0, 0, 'red'),
+		tank_class:new(1, 5, 'red')
+	}
+	actors.blue = {
+		tank_class:new(7, 7, 'blue', 'left'),
+		tank_class:new(7, 3, 'blue', 'left'),
+		tank_class:new(5, 5, 'blue', 'left')
+	}
 end
 
 function _update()
@@ -238,9 +184,15 @@ end
 
 function gamedraw()
     map(0, 0, 0, 0, 16, 16)
-	tank0:draw()
-	tank1:draw()
-	tank2:draw()
+
+	foreach(actors.red, function(actor)
+		actor:draw()
+	end)
+
+	foreach(actors.blue, function(actor)
+		actor:draw()
+	end)
+
 	cursor:draw()
 end
 
@@ -326,14 +278,14 @@ __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-bbbbbbb355555555cc7c7c7c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-b3bbbbbb55555555cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+bb3bbbbb55555555cc7c7c7c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+bbbbbbbb55555555cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+bbbbbbb355555555cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+bbbbbb3b55555555cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 3bbbbbbb55555555cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+bbbbbbb355555555cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 bbbbbbbb55555555cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-bbbb3bbb55555555cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-bbb3bbbb55555555cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-bbbbbbbb55555555cccccccc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-3bbbbbbb55555555ccc7c7cc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+bbb3bbbb55555555ccc7c7cc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000666666660000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000666666660000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000666666660000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
